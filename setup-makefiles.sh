@@ -18,7 +18,7 @@
 
 set -e
 
-DEVICE=riva
+DEVICE=rolex
 VENDOR=xiaomi
 
 INITIAL_COPYRIGHT_YEAR=2018
@@ -40,7 +40,7 @@ fi
 setup_vendor "$DEVICE" "$VENDOR" "$LINEAGE_ROOT"
 
 # Copyright headers and guards
-write_headers "riva"
+write_headers "rolex"
 
 # The standard device blobs
 write_makefiles "$MY_DIR"/proprietary-files.txt true

@@ -23,4 +23,4 @@ DEVICE_PACKAGE_OVERLAYS += $(DEVICE_PATH)/overlay
 include $(DEVICE_PATH)/product/*.mk
 
 # Inherit proprietary files
-$(call inherit-product-if-exists, vendor/xiaomi/riva/riva-vendor.mk)
+$(call inherit-product-if-exists, vendor/xiaomi/rolex/rolex-vendor.mk)

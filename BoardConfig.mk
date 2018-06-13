@@ -14,7 +14,7 @@
 # limitations under the License.
 #
 
-DEVICE_PATH := device/xiaomi/riva
+DEVICE_PATH := device/xiaomi/rolex
 
 TARGET_SPECIFIC_HEADER_PATH += $(DEVICE_PATH)/include
 
@@ -22,4 +22,4 @@ TARGET_SPECIFIC_HEADER_PATH += $(DEVICE_PATH)/include
 include $(DEVICE_PATH)/board/*.mk
 
 # Inherit the proprietary files
--include vendor/xiaomi/riva/BoardConfigVendor.mk
+-include vendor/xiaomi/rolex/BoardConfigVendor.mk
