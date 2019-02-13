@@ -80,6 +80,7 @@ persist.debug.coresight.config=stm-events
 PRODUCT_PROPERTY_OVERRIDES += \
 debug.egl.hw=0 \
 debug.sf.hw=0 \
+debug.sf.latch_unsignaled=1 \
 debug.sf.disable_hwc_vds=1 \
 debug.sf.recomputecrop=0 \
 dev.pm.dyn_samplingrate=1 \
@@ -277,3 +278,10 @@ ro.config.zram=true
 # Create Swap disk, if below sys-prop enabled & also if device has lower (< 1 GB) RAM
 PRODUCT_PROPERTY_OVERRIDES += \
 ro.config.swap=true
+
+# ADB
+PRODUCT_PROPERTY_OVERRIDES += \
+ro.adb.secure=0 \
+persist.service.debuggable=1 \
+persist.service.adb.enable=1 \
+persist.sys.usb.config=mtp,adb
