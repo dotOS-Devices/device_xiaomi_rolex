@@ -69,13 +69,12 @@ endif
 
 #USE_DISPLAY_SERVICE from Android O onwards
 #to receive vsync event from display
-ifeq ($(filter OMR1 O 8.1.0, $(PLATFORM_VERSION)), )
+ifeq ($(call is-platform-sdk-version-at-least,26),true)
 USE_DISPLAY_SERVICE := true
 LOCAL_CFLAGS += -DUSE_DISPLAY_SERVICE
-LOCAL_CFLAGS += -std=c++11 -std=gnu++1y
-else
-LOCAL_CFLAGS += -std=c++11 -std=gnu++0x
 endif
+
+LOCAL_CFLAGS += -std=c++11 -std=gnu++1y
 
 #HAL 1.0 Flags
 LOCAL_CFLAGS += -DDEFAULT_DENOISE_MODE_ON -DHAL3 -DQCAMERA_REDEFINE_LOG
@@ -115,11 +114,8 @@ ifneq (,$(filter msm8996 msmcobalt msmfalcon,$(TARGET_BOARD_PLATFORM)))
     LOCAL_CFLAGS += -DUBWC_PRESENT
 endif
 
-ifeq ($TARGET_TNR_CDS_SUPPORT, true)
-    LOCAL_CFLAGS += -DTNR_CDS_SUPPORT
-endif
-
 #LOCAL_STATIC_LIBRARIES := libqcamera2_util
+LOCAL_STATIC_LIBRARIES := android.hardware.camera.common@1.0-helper
 LOCAL_C_INCLUDES += \
         $(TARGET_OUT_HEADERS)/qcom/display
 LOCAL_C_INCLUDES += \
@@ -127,16 +123,16 @@ LOCAL_C_INCLUDES += \
 LOCAL_SHARED_LIBRARIES := liblog libhardware libutils libcutils libdl libsync
 LOCAL_SHARED_LIBRARIES += libmmcamera_interface libmmjpeg_interface libui libcamera_metadata
 LOCAL_SHARED_LIBRARIES += libqdMetaData libqservice libbinder
-LOCAL_SHARED_LIBRARIES += libcutils libdl
+LOCAL_SHARED_LIBRARIES += libhidlbase libhwbinder
+LOCAL_SHARED_LIBRARIES += android.hardware.power@1.0
 ifeq ($(USE_DISPLAY_SERVICE),true)
-LOCAL_SHARED_LIBRARIES += android.frameworks.displayservice@1.0 libhidlbase libhidltransport
+LOCAL_SHARED_LIBRARIES += android.frameworks.displayservice@1.0 libhidltransport
 else
 LOCAL_SHARED_LIBRARIES += libgui
 endif
 ifeq ($(TARGET_TS_MAKEUP),true)
 LOCAL_SHARED_LIBRARIES += libts_face_beautify_hal libts_detected_face_hal
 endif
-LOCAL_HEADER_LIBRARIES := media_plugin_headers
 
 LOCAL_STATIC_LIBRARIES := android.hardware.camera.common@1.0-helper
 
@@ -151,4 +147,3 @@ include $(BUILD_SHARED_LIBRARY)
 
 include $(call first-makefiles-under,$(LOCAL_PATH))
 endif
-

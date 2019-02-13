@@ -168,8 +168,7 @@ const QCamera3HardwareInterface::QCameraMap<
     { ANDROID_CONTROL_SCENE_MODE_SPORTS ,        CAM_SCENE_MODE_SPORTS },
     { ANDROID_CONTROL_SCENE_MODE_PARTY,          CAM_SCENE_MODE_PARTY },
     { ANDROID_CONTROL_SCENE_MODE_CANDLELIGHT,    CAM_SCENE_MODE_CANDLELIGHT },
-    { ANDROID_CONTROL_SCENE_MODE_BARCODE,        CAM_SCENE_MODE_BARCODE},
-    { ANDROID_CONTROL_SCENE_MODE_HDR,            CAM_SCENE_MODE_HDR }
+    { ANDROID_CONTROL_SCENE_MODE_BARCODE,        CAM_SCENE_MODE_BARCODE}
 };
 
 const QCamera3HardwareInterface::QCameraMap<
@@ -248,14 +247,14 @@ const QCamera3HardwareInterface::QCameraMap<
     { ANDROID_LENS_STATE_MOVING,        CAM_AF_LENS_STATE_MOVING}
 };
 
-const int32_t available_thumbnail_sizes[] = {176, 144,
+const int32_t available_thumbnail_sizes[] = {0, 0,
+                                             176, 144,
                                              240, 144,
                                              256, 144,
                                              240, 160,
                                              256, 154,
                                              240, 240,
-                                             320, 240,
-                                               0, 0  };
+                                             320, 240};
 
 const QCamera3HardwareInterface::QCameraMap<
         camera_metadata_enum_android_sensor_test_pattern_mode_t,
@@ -1221,7 +1220,7 @@ int32_t QCamera3HardwareInterface::getSensorOutputSize(cam_dimension_t &sensor_d
 void QCamera3HardwareInterface::enablePowerHint()
 {
     if (!mPowerHintEnabled) {
-        m_perfLock.powerHint(POWER_HINT_VIDEO_ENCODE, true);
+        m_perfLock.powerHint(PowerHint::VIDEO_ENCODE, true);
         mPowerHintEnabled = true;
     }
 }
@@ -1239,7 +1238,7 @@ void QCamera3HardwareInterface::enablePowerHint()
 void QCamera3HardwareInterface::disablePowerHint()
 {
     if (mPowerHintEnabled) {
-        m_perfLock.powerHint(POWER_HINT_VIDEO_ENCODE, false);
+        m_perfLock.powerHint(PowerHint::VIDEO_ENCODE, false);
         mPowerHintEnabled = false;
     }
 }
@@ -5772,7 +5771,6 @@ QCamera3HardwareInterface::translateFromHalMetadata(
     }
 
     IF_META_AVAILABLE(int32_t, sensorSensitivity, CAM_INTF_META_SENSOR_SENSITIVITY, metadata) {
-        if(*sensorSensitivity < 100) *sensorSensitivity = 100;
         LOGD("sensorSensitivity = %d", *sensorSensitivity);
         camMetadata.update(ANDROID_SENSOR_SENSITIVITY, sensorSensitivity, 1);
 
@@ -6223,12 +6221,6 @@ QCamera3HardwareInterface::translateFromHalMetadata(
                 hAeRegions->rect.height);
     }
 
-    IF_META_AVAILABLE(uint32_t, afState, CAM_INTF_META_AF_STATE, metadata) {
-        uint8_t fwk_afState = (uint8_t) *afState;
-        camMetadata.update(ANDROID_CONTROL_AF_STATE, &fwk_afState, 1);
-        LOGD("urgent Metadata : ANDROID_CONTROL_AF_STATE %u", *afState);
-    }
-
     IF_META_AVAILABLE(float, focusDistance, CAM_INTF_META_LENS_FOCUS_DISTANCE, metadata) {
         camMetadata.update(ANDROID_LENS_FOCUS_DISTANCE , focusDistance, 1);
     }
@@ -6616,6 +6608,12 @@ QCamera3HardwareInterface::translateCbUrgentMetadataToResultMetadata
         uint8_t fwk_ae_state = (uint8_t) *ae_state;
         camMetadata.update(ANDROID_CONTROL_AE_STATE, &fwk_ae_state, 1);
         LOGD("urgent Metadata : ANDROID_CONTROL_AE_STATE %u", *ae_state);
+    }
+
+    IF_META_AVAILABLE(uint32_t, afState, CAM_INTF_META_AF_STATE, metadata) {
+        uint8_t fwk_afState = (uint8_t) *afState;
+        camMetadata.update(ANDROID_CONTROL_AF_STATE, &fwk_afState, 1);
+        LOGD("urgent Metadata : ANDROID_CONTROL_AF_STATE %u", *afState);
     }
 
     IF_META_AVAILABLE(uint32_t, focusMode, CAM_INTF_PARM_FOCUS_MODE, metadata) {
@@ -7502,14 +7500,8 @@ int QCamera3HardwareInterface::initStaticMetadata(uint32_t cameraId)
     staticInfo.update(ANDROID_SENSOR_INFO_WHITE_LEVEL,
             &gCamCapability[cameraId]->white_level, 1);
 
-    if(facingBack && gCamCapability[cameraId]->black_level_pattern[0] < 16) {
-        int32_t black_level_pattern_custom[BLACK_LEVEL_PATTERN_CNT] = {32,32,32,32};
-        staticInfo.update(ANDROID_SENSOR_BLACK_LEVEL_PATTERN,
-                black_level_pattern_custom, BLACK_LEVEL_PATTERN_CNT);
-    } else {
-        staticInfo.update(ANDROID_SENSOR_BLACK_LEVEL_PATTERN,
-                gCamCapability[cameraId]->black_level_pattern, BLACK_LEVEL_PATTERN_CNT);
-    }
+    staticInfo.update(ANDROID_SENSOR_BLACK_LEVEL_PATTERN,
+            gCamCapability[cameraId]->black_level_pattern, BLACK_LEVEL_PATTERN_CNT);
 
 #ifndef USE_HAL_3_3
     bool hasBlackRegions = false;
@@ -7740,22 +7732,6 @@ int QCamera3HardwareInterface::initStaticMetadata(uint32_t cameraId)
 
     static const uint8_t hotPixelMapMode = ANDROID_STATISTICS_HOT_PIXEL_MAP_MODE_OFF;
     staticInfo.update(ANDROID_STATISTICS_HOT_PIXEL_MAP_MODE, &hotPixelMapMode, 1);
-
-#if 1
-    const int64_t kRequiredMinDur = 33333333;
-    for (size_t i = 0; i < MIN(MAX_SIZES_CNT,
-            gCamCapability[cameraId]->picture_sizes_tbl_cnt); i++) {
-        if (gCamCapability[cameraId]->picture_min_duration[i] > kRequiredMinDur) {
-            LOGW("Detected unsupported picture min dur %" PRId64 " for size %" PRId32 " x %" PRId32 "!!"
-                    "Sending hardcoded %" PRId64 " to avoid runtime crashes",
-                    gCamCapability[cameraId]->picture_min_duration[i],
-                    gCamCapability[cameraId]->picture_sizes_tbl[i].width,
-                    gCamCapability[cameraId]->picture_sizes_tbl[i].height,
-                    kRequiredMinDur);
-            gCamCapability[cameraId]->picture_min_duration[i] = kRequiredMinDur;
-        }
-    }
-#endif
 
     /* android.scaler.availableMinFrameDurations */
     Vector<int64_t> available_min_durations;
@@ -9128,12 +9104,25 @@ camera_metadata_t* QCamera3HardwareInterface::translateCapabilityToMetadata(int 
             i++) {
         float range = gCamCapability[mCameraId]->fps_ranges_tbl[i].max_fps -
             gCamCapability[mCameraId]->fps_ranges_tbl[i].min_fps;
-        if (range > max_range) {
-            fps_range[0] =
-                (int32_t)gCamCapability[mCameraId]->fps_ranges_tbl[i].min_fps;
-            fps_range[1] =
-                (int32_t)gCamCapability[mCameraId]->fps_ranges_tbl[i].max_fps;
-            max_range = range;
+        if (type == CAMERA3_TEMPLATE_PREVIEW ||
+                type == CAMERA3_TEMPLATE_STILL_CAPTURE ||
+                type == CAMERA3_TEMPLATE_ZERO_SHUTTER_LAG) {
+            if (range > max_range) {
+                fps_range[0] =
+                    (int32_t)gCamCapability[mCameraId]->fps_ranges_tbl[i].min_fps;
+                fps_range[1] =
+                    (int32_t)gCamCapability[mCameraId]->fps_ranges_tbl[i].max_fps;
+                max_range = range;
+            }
+        } else {
+            if (range < 0.01 && max_fixed_fps <
+                    gCamCapability[mCameraId]->fps_ranges_tbl[i].max_fps) {
+                fps_range[0] =
+                    (int32_t)gCamCapability[mCameraId]->fps_ranges_tbl[i].min_fps;
+                fps_range[1] =
+                    (int32_t)gCamCapability[mCameraId]->fps_ranges_tbl[i].max_fps;
+                max_fixed_fps = gCamCapability[mCameraId]->fps_ranges_tbl[i].max_fps;
+            }
         }
     }
     settings.update(ANDROID_CONTROL_AE_TARGET_FPS_RANGE, fps_range, 2);

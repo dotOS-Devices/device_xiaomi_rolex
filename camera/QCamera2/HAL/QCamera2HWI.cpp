@@ -46,6 +46,7 @@
 #include "QCameraBufferMaps.h"
 #include "QCameraFlash.h"
 #include "QCameraTrace.h"
+#include "QCameraDisplay.h"
 
 extern "C" {
 #include "mm_camera_dbg.h"
@@ -411,7 +412,7 @@ void QCamera2HardwareInterface::stop_preview(struct camera_device *device)
              hw->getCameraId());
 
     // Disable power Hint for preview
-    hw->m_perfLock.powerHint(POWER_HINT_VIDEO_ENCODE, false);
+    hw->m_perfLock.powerHint(PowerHint::VIDEO_ENCODE, false);
 
     hw->m_perfLock.lock_acq();
     hw->lockAPI();
@@ -1686,7 +1687,11 @@ QCamera2HardwareInterface::QCamera2HardwareInterface(uint32_t cameraId)
     pthread_condattr_init(&mCondAttr);
     pthread_condattr_setclock(&mCondAttr, CLOCK_MONOTONIC);
 
-
+#ifndef USE_DISPLAY_SERVICE
+    mCameraDisplay = new QCameraDisplay();
+#else
+    mCameraDisplay = QCameraDisplay::instance();
+#endif
     pthread_mutex_init(&m_lock, NULL);
     pthread_cond_init(&m_cond, &mCondAttr);
 
@@ -1765,6 +1770,7 @@ QCamera2HardwareInterface::~QCamera2HardwareInterface()
     closeCamera();
     m_perfLock.lock_rel();
     m_perfLock.lock_deinit();
+
     pthread_mutex_destroy(&m_lock);
     pthread_cond_destroy(&m_cond);
     pthread_mutex_destroy(&m_evtLock);
@@ -1987,6 +1993,7 @@ int QCamera2HardwareInterface::openCamera()
     bDepthAFCallbacks = atoi(value);
     mCameraHandle->ops->get_session_id(mCameraHandle->camera_handle,
         &sessionId[mCameraId]);
+
     return NO_ERROR;
 
 error_exit3:
@@ -3512,6 +3519,15 @@ int QCamera2HardwareInterface::startPreview()
 
     m_perfLock.lock_acq();
 
+#ifdef USE_DISPLAY_SERVICE
+     /* Only start vsync for presentation timestamp during video */
+    if(mParameters.getRecordingHintValue() == true
+            && !mCameraDisplay->isSyncing()
+            && !mCameraDisplay->startVsync(TRUE)) {
+        LOGE("Error: Cannot start vsync (still continue)");
+    }
+#endif //USE_DISPLAY_SERVICE
+
     updateThermalLevel((void *)&mThermalLevel);
 
     setDisplayFrameSkip();
@@ -3560,7 +3576,7 @@ int QCamera2HardwareInterface::startPreview()
 
     if (rc == NO_ERROR) {
         // Set power Hint for preview
-        m_perfLock.powerHint(POWER_HINT_VIDEO_ENCODE, true);
+        m_perfLock.powerHint(PowerHint::VIDEO_ENCODE, true);
     }
 
     if ( msgTypeEnabled(CAMERA_MSG_META_DATA) && mCameraId == 0 ) {
@@ -3626,7 +3642,7 @@ int QCamera2HardwareInterface::stopPreview()
     mActiveAF = false;
 
     // Disable power Hint for preview
-    m_perfLock.powerHint(POWER_HINT_VIDEO_ENCODE, false);
+    m_perfLock.powerHint(PowerHint::VIDEO_ENCODE, false);
 
     m_perfLock.lock_acq();
 
@@ -3643,6 +3659,11 @@ int QCamera2HardwareInterface::stopPreview()
 #endif
     // delete all channels from preparePreview
     unpreparePreview();
+#ifdef USE_DISPLAY_SERVICE
+    if (mCameraDisplay->isSyncing()) {
+        mCameraDisplay->startVsync(FALSE);
+    }
+#endif //Use_DISPLAY_SERVICE
 
     m_perfLock.lock_rel();
 
@@ -6746,10 +6767,6 @@ int32_t QCamera2HardwareInterface::processASDUpdate(
             LOGE("memory data ptr is NULL");
             return UNKNOWN_ERROR;
         }
-
-        pASDData[0] = CAMERA_META_DATA_ASD;
-        pASDData[1] = (int)data_len;
-        pASDData[2] = asd_decision.detected_scene;
 
         qcamera_callback_argm_t cbArg;
         memset(&cbArg, 0, sizeof(qcamera_callback_argm_t));
