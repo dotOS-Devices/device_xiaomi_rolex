@@ -194,9 +194,6 @@ private:
     QCameraCmdThread mProcTh;
     bool             mActive;
 };
-
-class QCameraDisplay;
-
 class QCamera2HardwareInterface : public QCameraAllocator,
         public QCameraThermalCallback, public QCameraAdjustFPS
 {
@@ -793,7 +790,7 @@ private:
     uint32_t mSurfaceStridePadding;
 
     //QCamera Display Object
-    QCameraDisplay* mCameraDisplay;
+    //QCameraDisplay mCameraDisplay;
 
     bool m_bNeedRestart;
     Mutex mMapLock;
