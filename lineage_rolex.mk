@@ -19,6 +19,9 @@ $(call inherit-product, device/xiaomi/rolex/full_rolex.mk)
 # Inherit some common LineageOS stuff.
 $(call inherit-product, vendor/lineage/config/common_full_phone.mk)
 
+#Boot Animation res
+TARGET_BOOT_ANIMATION_RES := 720
+
 PRODUCT_NAME := lineage_rolex
 BOARD_VENDOR := Xiaomi
 
