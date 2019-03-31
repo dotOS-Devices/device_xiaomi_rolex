@@ -63,7 +63,7 @@ persist.debug.coresight.config=stm-events
 # Display
 PRODUCT_PROPERTY_OVERRIDES += \
 ro.opengles.version=196608 \
-ro.sf.lcd_density=280 \
+ro.sf.lcd_density=300 \
 debug.sf.disable_hwc_vds=1 \
 debug.sf.hw=0 \
 debug.sf.latch_unsignaled=1 \
