@@ -24,7 +24,7 @@
 
     <!-- Doze: when to pulse after a buzzworthy notification arrives -->
     <string name="doze_pulse_schedule" translatable="false">10s,30s,60s,180s</string>
- 
+
     <!-- Doze: check proximity sensor before pulsing from intent? -->
     <bool name="doze_proximity_check_before_pulse_intent">true</bool>
  
@@ -35,4 +35,8 @@
          does not work well, particularly with noisy touchscreens. Note that disabling it may
          increase the rate of unintentional unlocks. -->
     <bool name="config_lockscreenAntiFalsingClassifierEnabled">false</bool>
+
+    <!-- Max visible notification icons -->
+    <integer name="config_maxVisibleNotificationIcons">6</integer>
+    <integer name="config_maxVisibleNotificationIconsWhenDark">7</integer>
 </resources>
