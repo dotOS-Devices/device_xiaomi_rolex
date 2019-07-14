@@ -329,7 +329,7 @@ PRODUCT_PACKAGES += \
 # Releasetools
 TARGET_RELEASETOOLS_EXTENSIONS := device/xiaomi/rolex
 
-# Ship Miui Firmware
+# Ship Firmware
 PRODUCT_COPY_FILES += \
     $(LOCAL_PATH)/firmware/adspso.bin:install/firmware-update/adspso.bin \
     $(LOCAL_PATH)/firmware/cmnlib64.mbn:install/firmware-update/cmnlib64.mbn \
