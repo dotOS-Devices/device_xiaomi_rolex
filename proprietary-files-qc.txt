@@ -65,6 +65,11 @@ lib/libaptX_encoder.so|984739a0bc968e18f75ced205733fe3f51c2d4f0
 lib64/libaptXHD_encoder.so|90f47f10af28b3ead143200cb4370b847c513127
 lib64/libaptX_encoder.so|0cebad28afcf29f931bdc2d24fce2730dc882ecf
 
+# Audio dirac - from xiaomi
+vendor/lib/soundfx/libdirac.so
+vendor/lib/libDiracAPI_SHARED.so
+vendor/etc/diracmobile.config
+
 # Bluetooth - from daisy - PKQ1.180917.001 V10.0.1.0.PDLMIFJ
 lib/com.qualcomm.qti.bluetooth_audio@1.0.so|4b7c2dc7036798911aad0f3bf166f28803f13970
 lib64/com.qualcomm.qti.bluetooth_audio@1.0.so|252eff7e0951182503219555301fec31e1f7c066
