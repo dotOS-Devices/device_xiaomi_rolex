@@ -120,6 +120,11 @@ ro.vendor.qti.sys.fw.bservice_enable=true \
 ro.vendor.qti.sys.fw.bservice_limit=5 \
 ro.vendor.qti.sys.fw.bservice_age=5000
 
+# Ril
+PRODUCT_PROPERTY_OVERRIDES += \
+ro.telephony.call_ring.delay=0 \
+ring.delay=0
+
 # Fingerprint
 PRODUCT_PROPERTY_OVERRIDES += \
 persist.qfp=false
