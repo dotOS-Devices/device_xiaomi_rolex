@@ -110,9 +110,20 @@ static void enable_iorap()
     property_override("iorapd.readahead.enable","true");
 }
 
+void set_avoid_gfxaccel_config() {
+    struct sysinfo sys;
+    sysinfo(&sys);
+
+    if (sys.totalram <= 2048ull * 1024 * 1024) {
+        // Reduce memory footprint
+        property_override("ro.config.avoid_gfx_accel", "true");
+    }
+}
+
 void vendor_load_properties()
 {
     init_target_properties();
     set_ramconfig();
     enable_iorap();
+    set_avoid_gfxaccel_config();
 }
