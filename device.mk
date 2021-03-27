@@ -495,5 +495,11 @@ PRODUCT_ALWAYS_PREOPT_EXTRACTED_APK := true
 PRODUCT_PACKAGES += InProcessNetworkStack
 PRODUCT_PACKAGES += com.android.tethering.inprocess
 
+# Xiaomi Ringtone
+PRODUCT_COPY_FILES += \
+    $(LOCAL_PATH)/media/MI.ogg:$(TARGET_COPY_OUT_PRODUCT)/media/audio/ringtones/MI.ogg \
+    $(LOCAL_PATH)/media/MiClassic.ogg:$(TARGET_COPY_OUT_PRODUCT)/media/audio/ringtones/MiClassic.ogg \
+    $(LOCAL_PATH)/media/MiMix.ogg:$(TARGET_COPY_OUT_PRODUCT)/media/audio/ringtones/MiMix.ogg
+
 # Inherit proprietary files
 $(call inherit-product-if-exists, vendor/xiaomi/rolex/rolex-vendor.mk)
