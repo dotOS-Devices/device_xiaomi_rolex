@@ -103,8 +103,16 @@ static void set_ramconfig() {
     }
 }
 
+static void enable_iorap()
+{
+    property_override("ro.iorapd.enable","true");
+    property_override("iorapd.perfetto.enable","true");
+    property_override("iorapd.readahead.enable","true");
+}
+
 void vendor_load_properties()
 {
     init_target_properties();
     set_ramconfig();
+    enable_iorap();
 }

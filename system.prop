@@ -53,6 +53,8 @@ debug.sf.disable_backpressure=1
 iorapd.perfetto.enable=true
 
 # Enable iorapd readahead for app starts
+ro.iorapd.enable=true
+iorapd.perfetto.enable=true
 iorapd.readahead.enable=true
 
 # FM
